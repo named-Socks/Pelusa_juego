@@ -1,12 +1,8 @@
-"""
-¡Pelusas! - Juego de cartas de mesa (v13)
-----------------------------------------
-Novedad:
-1. Deshabilitación de todos los botones de acción en el momento exacto en que 
-   un jugador pierde por repetir número a partir de la 4ª carta.
-2. Rehabilitación automática de los botones al cambiar de turno.
-"""
 
+"""
+Regina-Alan-Fatima-Iván
+"""
+#librerías
 import tkinter as tk
 from tkinter import messagebox
 import random
@@ -22,16 +18,43 @@ except ImportError:
 # ============================================================
 #                       CONFIGURACIÓN
 # ============================================================
-
+#rutas de las imágenes, los valores de las cartas, el tamaño visual y las paletas de colores y las letras
 CARPETA_IMAGENES = "cartas"
 PATRON_NOMBRE_IMAGEN = "Pelusa_{numero}.jpg"
 NUMEROS = list(range(1, 11))
-TAMANO_IMAGEN = (160, 230)
+
+#img en el centro
+TAMANO_IMAGEN = (280, 400)
+
+#colores
+COLORES = {
+    "fondo": "#f0e6d2",
+    "texto_principal": "#2c3e50",
+    "boton_robar": "#27ae60",
+    "boton_robar_rival": "#2980b9",
+    "boton_detener": "#c0392b",
+    "boton_deshabilitado": "#bdc3c7",
+    "texto_boton": "#ffffff"
+}
+
+# 
+FUENTES = {
+    "titulo": ("Segoe UI", 24, "bold"),
+    "subtitulo": ("Segoe UI", 16, "bold"),
+    "puntos": ("Consolas", 11, "bold"), 
+    "zona_activa": ("Segoe UI", 13),
+    "mensaje": ("Segoe UI", 12, "italic"),
+    "boton": ("Segoe UI", 12, "bold"),
+    "extra": ("Segoe UI", 10)
+}
 
 
 # ============================================================
 #                       LÓGICA DEL JUEGO
 # ============================================================
+# 
+# 
+#clases poo: la estructura individual de la Carta, el comportamiento y puntajes del Jugador y del Mazo de cartas.
 
 class Carta:
     def __init__(self, numero):
@@ -42,8 +65,8 @@ class Carta:
 class Jugador:
     def __init__(self, nombre):
         self.nombre = nombre
-        self.banco = []        # Cartas aspiradas (puntos seguros)
-        self.zona_activa = []  # Cartas acumuladas este turno (en riesgo)
+        self.banco = []      #puntos seguros
+        self.zona_activa = []  #acumuladas
 
     def tiene_numero(self, numero):
         return any(c.numero == numero for c in self.zona_activa)
@@ -92,14 +115,14 @@ class Mazo:
 # ============================================================
 #                       INTERFAZ (TKINTER)
 # ============================================================
+# Controla la interfaz gráfica principal con Tkinter, gestionando la navegación entre el menú de inicio, la captura de nombres y la ventana interactiva del juego.
 
 class JuegoPelusas:
     def __init__(self, root):
         self.root = root
         self.root.title("¡Pelusas! - Juego de Cartas")
-        self.root.geometry("820x680")
-        self.root.configure(bg="#f0e6d2")
-        self.root.resizable(False, False)
+        self.root.geometry("900x800")
+        self.root.configure(bg=COLORES["fondo"])
 
         self.imagenes_cache = {}
         self.ultima_carta_robada = None
@@ -123,71 +146,73 @@ class JuegoPelusas:
         """Pantalla inicial para elegir cuántos jugadores van a participar"""
         self._limpiar_pantalla()
 
-        self.frame_menu = tk.Frame(self.root, bg="#f0e6d2")
+        self.frame_menu = tk.Frame(self.root, bg=COLORES["fondo"])
         self.frame_menu.pack(expand=True)
 
         tk.Label(
-            self.frame_menu, text="¡PELUSAS!", font=("Arial", 30, "bold"),
-            bg="#f0e6d2", fg="#2c3e50"
-        ).pack(pady=20)
+            self.frame_menu, text="¡PELUSAS!", font=FUENTES["titulo"],
+            bg=COLORES["fondo"], fg=COLORES["texto_principal"]
+        ).pack(pady=30)
 
         tk.Label(
             self.frame_menu, text="Selecciona la cantidad de jugadores:",
-            font=("Arial", 14), bg="#f0e6d2"
+            font=FUENTES["zona_activa"], bg=COLORES["fondo"]
         ).pack(pady=10)
 
-        frame_botones_num = tk.Frame(self.frame_menu, bg="#f0e6d2")
-        frame_botones_num.pack(pady=15)
+        frame_botones_num = tk.Frame(self.frame_menu, bg=COLORES["fondo"])
+        frame_botones_num.pack(pady=20)
 
         for n in range(2, 6):
             cartas_txt = "50 cartas" if n <= 3 else "100 cartas"
             btn = tk.Button(
                 frame_botones_num, 
                 text=f"{n} Jugadores\n({cartas_txt})", 
-                font=("Arial", 11, "bold"),
-                bg="#4caf50", fg="white", width=14, height=2,
+                font=FUENTES["extra"],
+                bg=COLORES["boton_robar"], fg=COLORES["texto_boton"], width=16, height=2,
+                relief="flat", cursor="hand2",
                 command=lambda num=n: self._pedir_nombres_jugadores(num)
             )
-            btn.pack(side="left", padx=8)
+            btn.pack(side="left", padx=10)
 
     def _pedir_nombres_jugadores(self, cantidad_jugadores):
         """Pantalla para escribir los nombres de cada uno de los jugadores"""
         self._limpiar_pantalla()
         self.cantidad_jugadores_actual = cantidad_jugadores
 
-        self.frame_menu = tk.Frame(self.root, bg="#f0e6d2")
+        self.frame_menu = tk.Frame(self.root, bg=COLORES["fondo"])
         self.frame_menu.pack(expand=True)
 
         tk.Label(
             self.frame_menu, text="Introduce los nombres de los jugadores:",
-            font=("Arial", 18, "bold"), bg="#f0e6d2", fg="#2c3e50"
-        ).pack(pady=20)
+            font=FUENTES["subtitulo"], bg=COLORES["fondo"], fg=COLORES["texto_principal"]
+        ).pack(pady=30)
 
         self.entries_nombres = []
-        frame_entradas = tk.Frame(self.frame_menu, bg="#f0e6d2")
-        frame_entradas.pack(pady=10)
+        frame_entradas = tk.Frame(self.frame_menu, bg=COLORES["fondo"])
+        frame_entradas.pack(pady=15)
 
         for i in range(cantidad_jugadores):
-            row_frame = tk.Frame(frame_entradas, bg="#f0e6d2")
-            row_frame.pack(pady=6)
+            row_frame = tk.Frame(frame_entradas, bg=COLORES["fondo"])
+            row_frame.pack(pady=8)
 
             lbl = tk.Label(
-                row_frame, text=f"Jugador {i+1}:", font=("Arial", 11, "bold"),
-                bg="#f0e6d2", width=10, anchor="e"
+                row_frame, text=f"Jugador {i+1}:", font=FUENTES["zona_activa"],
+                bg=COLORES["fondo"], width=10, anchor="e"
             )
-            lbl.pack(side="left", padx=5)
+            lbl.pack(side="left", padx=8)
 
-            entry = tk.Entry(row_frame, font=("Arial", 11), width=22)
+            entry = tk.Entry(row_frame, font=FUENTES["zona_activa"], width=25, relief="solid")
             entry.insert(0, f"Jugador {i+1}")
-            entry.pack(side="left", padx=5)
+            entry.pack(side="left", padx=8)
             self.entries_nombres.append(entry)
 
         btn_comenzar = tk.Button(
-            self.frame_menu, text="¡Empezar Partida!", font=("Arial", 12, "bold"),
-            bg="#2196f3", fg="white", width=20, height=2,
+            self.frame_menu, text="¡Empezar Partida!", font=FUENTES["boton"],
+            bg=COLORES["boton_robar_rival"], fg=COLORES["texto_boton"], width=22, height=2,
+            relief="flat", cursor="hand2",
             command=self._procesar_nombres_y_empezar
         )
-        btn_comenzar.pack(pady=25)
+        btn_comenzar.pack(pady=35)
 
     def _procesar_nombres_y_empezar(self):
         """Recoge los nombres escritos y arranca el juego"""
@@ -227,96 +252,141 @@ class JuegoPelusas:
             self._mostrar_menu_inicial()
 
     def _crear_interfaz_juego(self):
-        self.frame_juego = tk.Frame(self.root, bg="#f0e6d2")
-        self.frame_juego.pack(fill="both", expand=True)
+        """Rediseño visual completo de la interfaz de juego activa."""
+        self.frame_juego = tk.Frame(self.root, bg=COLORES["fondo"])
+        self.frame_juego.pack(fill="both", expand=True, padx=20, pady=10)
+
+        # 1. PANEL SUPERIOR: Turno y Puntajes Globales
+        frame_header = tk.Frame(self.frame_juego, bg=COLORES["fondo"])
+        frame_header.pack(fill="x", pady=(0, 10))
 
         self.label_turno = tk.Label(
-            self.frame_juego, text="", font=("Arial", 18, "bold"), bg="#f0e6d2"
+            frame_header, text="Turno de:", font=FUENTES["subtitulo"], 
+            bg=COLORES["fondo"], fg=COLORES["texto_principal"]
         )
-        self.label_turno.pack(pady=6)
+        self.label_turno.pack(anchor="w")
 
+        # Contenedor para puntajes con fondo blanco
+        frame_scores = tk.Frame(frame_header, bg="#ffffff", relief="solid", bd=1)
+        frame_scores.pack(fill="x", pady=5)
+        
         self.label_puntajes = tk.Label(
-            self.frame_juego, text="", font=("Arial", 10, "bold"), bg="#f0e6d2", fg="#2c3e50"
+            frame_scores, text="", font=FUENTES["puntos"], 
+            bg="#ffffff", fg=COLORES["texto_principal"], pady=6, wraplength=840
         )
-        self.label_puntajes.pack(pady=4)
+        self.label_puntajes.pack(fill="x")
 
-        self.frame_carta = tk.Frame(self.frame_juego, bg="#ffffff", width=180, height=230,
-                                     relief="ridge", bd=2)
-        self.frame_carta.pack(pady=8)
+        # 2. PANEL CENTRAL: La Carta y la Zona Activa
+        frame_central = tk.Frame(self.frame_juego, bg=COLORES["fondo"])
+        frame_central.pack(fill="both", expand=True, pady=5)
+        
+        # --- Carta Grande ---
+        self.frame_carta = tk.Frame(
+            frame_central, bg="#ffffff", 
+            width=TAMANO_IMAGEN[0] + 10, height=TAMANO_IMAGEN[1] + 10,
+            relief="ridge", bd=3
+        )
+        self.frame_carta.pack(pady=5)
         self.frame_carta.pack_propagate(False)
 
         self.label_imagen = tk.Label(self.frame_carta, bg="#ffffff")
         self.label_imagen.pack(expand=True)
 
+        # --- Zona Activa (Debajo de la carta, destacada) ---
+        frame_info_turno = tk.Frame(frame_central, bg=COLORES["fondo"])
+        frame_info_turno.pack(fill="x", pady=5)
+
+        tk.Label(
+            frame_info_turno, text="TU ZONA ACTIVA (Cartas en riesgo):", 
+            font=FUENTES["extra"], bg=COLORES["fondo"], fg="#7f8c8d"
+        ).pack()
+
         self.label_cartas_turno = tk.Label(
-            self.frame_juego, text="", font=("Arial", 11), bg="#f0e6d2", wraplength=760
+            frame_info_turno, text="", font=("Segoe UI", 15, "bold"), 
+            bg=COLORES["fondo"], fg="#e67e22", wraplength=840
         )
-        self.label_cartas_turno.pack(pady=6)
+        self.label_cartas_turno.pack(pady=(2, 4))
 
         self.label_otros = tk.Label(
-            self.frame_juego, text="", font=("Arial", 9), bg="#f0e6d2", fg="#555", wraplength=780
+            self.frame_juego, text="", font=("Segoe UI", 9), 
+            bg=COLORES["fondo"], fg="#7f8c8d", wraplength=840
         )
-        self.label_otros.pack(pady=4)
+        self.label_otros.pack(pady=2)
 
-        # Botones principales
-        frame_botones = tk.Frame(self.frame_juego, bg="#f0e6d2")
+        # 3. PANEL DE BOTONES (Grandes y Estilo Plano)
+        frame_botones = tk.Frame(self.frame_juego, bg=COLORES["fondo"])
         frame_botones.pack(pady=10)
 
+        estilo_btn = {
+            "font": FUENTES["boton"],
+            "fg": COLORES["texto_boton"],
+            "relief": "flat",
+            "cursor": "hand2",
+            "width": 18,
+            "pady": 8
+        }
+
         self.btn_robar = tk.Button(
-            frame_botones, text="Robar del mazo", font=("Arial", 11, "bold"),
-            command=self.robar_carta, bg="#4caf50", fg="white", width=16
+            frame_botones, text="Robar del mazo", 
+            command=self.robar_carta, bg=COLORES["boton_robar"], **estilo_btn
         )
-        self.btn_robar.grid(row=0, column=0, padx=5)
+        self.btn_robar.grid(row=0, column=0, padx=10)
 
         self.btn_robar_otro = tk.Button(
-            frame_botones, text="Robar a rivales", font=("Arial", 11, "bold"),
-            command=self.ejecutar_robo_rivales, bg="#2196f3", fg="white", width=16
+            frame_botones, text="Robar a rivales", 
+            command=self.ejecutar_robo_rivales, bg=COLORES["boton_robar_rival"], **estilo_btn
         )
-        self.btn_robar_otro.grid(row=0, column=1, padx=5)
+        self.btn_robar_otro.grid(row=0, column=1, padx=10)
 
         self.btn_detener = tk.Button(
-            frame_botones, text="Detener turno", font=("Arial", 11, "bold"),
-            command=self.detener_turno, bg="#f44336", fg="white", width=16
+            frame_botones, text="Detener turno", 
+            command=self.detener_turno, bg=COLORES["boton_detener"], **estilo_btn
         )
-        self.btn_detener.grid(row=0, column=2, padx=5)
+        self.btn_detener.grid(row=0, column=2, padx=10)
 
+        # 4. PANEL INFERIOR: Mensajes y Mazo
         self.label_mensaje = tk.Label(
-            self.frame_juego, text="", font=("Arial", 11, "italic"), bg="#f0e6d2", fg="#333"
+            self.frame_juego, text="", font=FUENTES["mensaje"], 
+            bg=COLORES["fondo"], fg=COLORES["texto_principal"], height=2
         )
-        self.label_mensaje.pack(pady=6)
+        self.label_mensaje.pack(pady=5)
 
         self.label_mazo = tk.Label(
-            self.frame_juego, text="", font=("Arial", 10), bg="#f0e6d2", fg="#777"
+            self.frame_juego, text="", font=FUENTES["extra"], 
+            bg=COLORES["fondo"], fg="#95a5a6"
         )
-        self.label_mazo.pack(pady=2)
+        self.label_mazo.pack(pady=(0, 5))
 
         # Barra inferior de opciones extra
-        frame_opciones_extra = tk.Frame(self.frame_juego, bg="#f0e6d2")
-        frame_opciones_extra.pack(pady=10)
+        frame_opciones_extra = tk.Frame(self.frame_juego, bg=COLORES["fondo"])
+        frame_opciones_extra.pack(fill="x", side="bottom", pady=5)
 
         btn_reiniciar = tk.Button(
-            frame_opciones_extra, text="🔄 Reiniciar partida", font=("Arial", 9, "bold"),
-            command=self._reiniciar_partida, bg="#ff9800", fg="white", width=18
+            frame_opciones_extra, text="🔄 Reiniciar partida", 
+            font=FUENTES["extra"], command=self._reiniciar_partida, 
+            bg="#f39c12", fg=COLORES["texto_boton"], width=20,
+            relief="flat", cursor="hand2"
         )
-        btn_reiniciar.grid(row=0, column=0, padx=10)
+        btn_reiniciar.pack(side="left", padx=10)
 
         btn_salir = tk.Button(
-            frame_opciones_extra, text="⚙️ Cambiar Jugadores / Salir", font=("Arial", 9, "bold"),
-            command=self._volver_al_menu, bg="#607d8b", fg="white", width=22
+            frame_opciones_extra, text="⚙️ Cambiar Jugadores / Salir", 
+            font=FUENTES["extra"], command=self._volver_al_menu, 
+            bg="#7f8c8d", fg=COLORES["texto_boton"], width=25,
+            relief="flat", cursor="hand2"
         )
-        btn_salir.grid(row=0, column=1, padx=10)
+        btn_salir.pack(side="right", padx=10)
 
     def _deshabilitar_botones_accion(self):
         """Deshabilita los botones durante transiciones o derrotas"""
-        self.btn_robar.config(state="disabled", bg="#cccccc")
-        self.btn_robar_otro.config(state="disabled", bg="#cccccc")
-        self.btn_detener.config(state="disabled", bg="#cccccc")
+        self.btn_robar.config(state="disabled", bg=COLORES["boton_deshabilitado"])
+        self.btn_robar_otro.config(state="disabled", bg=COLORES["boton_deshabilitado"])
+        self.btn_detener.config(state="disabled", bg=COLORES["boton_deshabilitado"])
 
     def _habilitar_botones_accion(self):
         """Habilita los botones de acción para el nuevo turno"""
-        self.btn_robar.config(state="normal", bg="#4caf50")
-        self.btn_robar_otro.config(state="normal", bg="#2196f3")
-        # El botón detener se maneja individualmente en _actualizar_interfaz (mínimo 3 cartas)
+        self.btn_robar.config(state="normal", bg=COLORES["boton_robar"])
+        self.btn_robar_otro.config(state="normal", bg=COLORES["boton_robar_rival"])
 
     def jugador_actual(self):
         return self.jugadores[self.turno_actual]
@@ -329,7 +399,6 @@ class JuegoPelusas:
         aspiradas = jugador.aspirar()
         self.ultima_carta_robada = None
         
-        # Volver a habilitar los botones para el jugador que inicia turno
         self._habilitar_botones_accion()
 
         self.label_imagen.config(image="", text="")
@@ -346,37 +415,41 @@ class JuegoPelusas:
         jugador = self.jugador_actual()
         self.label_turno.config(text=f"Turno de: {jugador.nombre}")
 
-        puntajes = "   |   ".join(
-            f"{j.nombre}: {j.puntos_totales} pts ({len(j.banco)} c)" for j in self.jugadores
-        )
-        self.label_puntajes.config(text=puntajes)
+        partes_puntajes = []
+        for j in self.jugadores:
+            nombre_fmt = f"{j.nombre[:12]:<12}"
+            pts_fmt = f"{j.puntos_totales:>3} pts"
+            cartas_fmt = f"({len(j.banco)} c)"
+            partes_puntajes.append(f"{nombre_fmt}: {pts_fmt} {cartas_fmt}")
+        
+        self.label_puntajes.config(text="  |  ".join(partes_puntajes))
 
         numeros_turno = [str(c.numero) for c in jugador.zona_activa]
         suma_actual_turno = sum(c.numero for c in jugador.zona_activa)
-        texto_turno = ", ".join(numeros_turno) if numeros_turno else "(ninguna)"
         
+        texto_turno = " - ".join(numeros_turno) if numeros_turno else "(vacía)"
         cant_cartas = len(jugador.zona_activa)
+        
         self.label_cartas_turno.config(
-            text=f"Zona activa (en riesgo): {texto_turno}   "
-                 f"[{cant_cartas} cartas | Suma actual: {suma_actual_turno} pts]"
+            text=f"{texto_turno}   [{cant_cartas} cartas | Suma: {suma_actual_turno} pts]"
         )
 
         partes = []
         for j in self._otros_jugadores():
             nums = ", ".join(str(c.numero) for c in j.zona_activa) or "(nada)"
             partes.append(f"{j.nombre}: {nums}")
-        self.label_otros.config(text="Otros jugadores -> " + "   |   ".join(partes))
+        self.label_otros.config(text="Otros jugadores en riesgo -> " + "   |   ".join(partes))
 
         self.label_mazo.config(text=f"Pelusas restantes en el mazo: {len(self.mazo.cartas)}")
 
-        # Mínimo de 3 cartas para poder plantarse (solo si los botones están activos)
         if self.btn_robar['state'] != "disabled":
             if cant_cartas >= 3:
-                self.btn_detener.config(state="normal", bg="#f44336")
+                self.btn_detener.config(state="normal", bg=COLORES["boton_detener"])
             else:
-                self.btn_detener.config(state="disabled", bg="#cccccc")
+                self.btn_detener.config(state="disabled", bg=COLORES["boton_deshabilitado"])
 
     def _mostrar_carta(self, carta):
+        """Muestra la imagen grande o el número si Pillow/imagen no está disponible."""
         ruta = os.path.join(CARPETA_IMAGENES, carta.imagen_archivo)
 
         if ruta in self.imagenes_cache:
@@ -394,7 +467,7 @@ class JuegoPelusas:
                 pass
 
         self.label_imagen.config(
-            image="", text=str(carta.numero), font=("Arial", 60, "bold"), fg="#333"
+            image="", text=str(carta.numero), font=("Segoe UI", 120, "bold"), fg=COLORES["texto_principal"]
         )
 
     def robar_carta(self):
@@ -411,7 +484,6 @@ class JuegoPelusas:
         
         # BUST: Pierde a partir de la 4ª carta (teniendo ya 3 acumuladas)
         if repetido and len(jugador.zona_activa) >= 3:
-            # DESHABILITAR BOTONES INMEDIATAMENTE AL PERDER
             self._deshabilitar_botones_accion()
 
             self.label_mensaje.config(
@@ -420,7 +492,6 @@ class JuegoPelusas:
             )
             jugador.zona_activa = []
             self._actualizar_interfaz()
-            # Esperar 2 segundos antes de reactivar botones con el siguiente jugador
             self.root.after(2000, self._pasar_turno)
         else:
             jugador.zona_activa.append(carta)
@@ -510,6 +581,11 @@ class JuegoPelusas:
         messagebox.showinfo("Fin de la partida", mensaje)
         self._deshabilitar_botones_accion()
 
+
+# ============================================================
+#                       INICIO DE LA APLICACIÓN
+# ============================================================
+# Configura la ventana raíz principal de Tkinter y arranca el bucle de eventos para iniciar el programa.
 
 if __name__ == "__main__":
     root = tk.Tk()
